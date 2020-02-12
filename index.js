@@ -60,7 +60,7 @@ app.delete("/projects/:id",projectExists,(req,res)=>{
 app.post("/projects/:id/tasks",projectExists,(req,res)=>{
 	const {title} = req.body
 	const {id} = req.params
-	const found = findProject(myProjects,id);   //<----
+	const found = findProject(myProjects,id)
 
 	found.tasks.push(title)
 	return res.status(200).json(myProjects)
