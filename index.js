@@ -5,6 +5,24 @@ app.use(express.json())
 
 
 const myProjects = []
+let count = 0
+
+const reqCounter  = (req,res,next)=>{
+	count++
+	console.log("Number of requests",count)
+	return next()
+}
+
+const projectExists = (req,res,next)=>{
+	const {id} = req.params
+	
+	if(findProject(myProjects,id)){
+		return next()
+	}
+	return res.status(400).json({ error: "Project doesn't exists" })
+}
+// app.use(projectExists)//Middleware projectExists runs for each middleware
+app.use(reqCounter)
 
 app.get('/', function (req, res) {
   return res.send(myProjects)
@@ -21,18 +39,17 @@ app.post('/projects', function(req, res) {
 	return res.status(200).json(project)
 });
 
-app.put("/projects/:id",(req,res)=>{
+app.put("/projects/:id",projectExists,(req,res)=>{
 	const {title} = req.body
 	const {id} = req.params
 
-	const found = myProjects.find(elem => elem.id == id)
-
+	const found = findProject(myProjects,id)
 	found.title  = title
 	 
 	return res.status(200).json(found)
 })
 
-app.delete("/projects/:id",(req,res)=>{
+app.delete("/projects/:id",projectExists,(req,res)=>{
 	const {id} = req.params
 
 	const found = myProjects.findIndex(elem => elem.id === id);
@@ -40,18 +57,18 @@ app.delete("/projects/:id",(req,res)=>{
 	return res.status(200).json(myProjects)
 })
 
-app.post("/projects/:id/tasks",(req,res)=>{
+app.post("/projects/:id/tasks",projectExists,(req,res)=>{
 	const {title} = req.body
 	const {id} = req.params
-
-	console.log(title)
-	const found = myProjects.find(elem => elem.id === id);
+	const found = findProject(myProjects,id);   //<----
 
 	found.tasks.push(title)
 	return res.status(200).json(myProjects)
 })
 
-
+const findProject = (arr,id)=>{	
+	return arr.find(elem => elem.id == id)
+}
 
 app.listen(8081,()=>{
 	console.log("linstening to 8081 port")
